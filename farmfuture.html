@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>FarmLog – Digital Farm Records</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root {
+  --accent:#2e8b57;
+  --muted:#6b7280;
+  --radius:14px;
+  --shadow:0 6px 22px rgba(0,0,0,0.12);
+}
+body {
+  margin:0;
+  font-family:Inter,Arial,sans-serif;
+  background:url('https://images.unsplash.com/photo-1501004318641-b39e6451bec6?q=80&w=1600&auto=format&fit=crop') center/cover no-repeat;
+  color:#0f172a;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+nav {
+  background:rgba(255,255,255,0.9);
+  backdrop-filter:blur(6px);
+  padding:.8rem 1.4rem;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  box-shadow:var(--shadow);
+}
+nav a {
+  color:var(--accent);
+  text-decoration:none;
+  margin-right:1rem;
+  font-weight:600;
+}
+nav a.active {
+  text-decoration:underline;
+}
+.container {
+  flex:1;
+  max-width:1000px;
+  margin:1.5rem auto;
+  background:rgba(255,255,255,0.85);
+  border-radius:var(--radius);
+  padding:1.5rem;
+  box-shadow:var(--shadow);
+}
+h1,h2{color:var(--accent);}
+.btn {
+  background:var(--accent);
+  color:#fff;
+  border:none;
+  padding:.55rem 1rem;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+}
+.btn.secondary {
+  background:#fff;
+  color:var(--accent);
+  border:1px solid var(--accent);
+}
+footer {
+  text-align:center;
+  padding:.8rem;
+  background:rgba(255,255,255,0.7);
+  font-size:.9rem;
+  color:var(--muted);
+}
+input,select,textarea {
+  width:100%;
+  padding:.5rem;
+  margin-top:.3rem;
+  border-radius:6px;
+  border:1px solid #ccc;
+}
+table {
+  width:100%;
+  border-collapse:collapse;
+  margin-top:1rem;
+}
+th,td {
+  border:1px solid #ddd;
+  padding:8px;
+  text-align:left;
+}
+th {
+  background:var(--accent);
+  color:#fff;
+}
+.tab{display:none;}
+.tab.active{display:block;}
+.chart-box{margin-top:1.5rem;}
+.hero {
+  background:rgba(0,0,0,0.5);
+  color:white;
+  padding:4rem 1rem;
+  text-align:center;
+  border-radius:var(--radius);
+}
+.features {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:1rem;
+  margin-top:2rem;
+}
+.card {
+  background:white;
+  border-radius:var(--radius);
+  padding:1rem;
+  box-shadow:var(--shadow);
+  text-align:center;
+}
+.card h3{color:var(--accent);}
+
+/* ---- LOGIN PAGE ---- */
+#loginPage {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:100vh;
+  background:rgba(0,0,0,0.5);
+}
+.login-box {
+  background:white;
+  padding:2rem;
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  width:300px;
+  text-align:center;
+}
+.login-box h2 {
+  color:var(--accent);
+  margin-bottom:1rem;
+}
+.login-box input {
+  width:100%;
+  margin-bottom:1rem;
+  padding:.5rem;
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN + SIGNUP PAGE -->
+<div id="loginPage">
+  <div class="login-box" id="loginBox">
+    <h2>🌾 FarmLog Login</h2>
+    <input type="text" id="loginUsername" placeholder="Username" />
+    <input type="password" id="loginPassword" placeholder="Password" />
+    <button class="btn" id="loginBtn">Login</button>
+    <p style="margin-top:1rem;">Don't have an account?
+      <a href="#" id="showSignup" style="color:var(--accent);font-weight:600;">Sign up</a>
+    </p>
+  </div>
+
+  <div class="login-box" id="signupBox" style="display:none;">
+    <h2>🌱 Create Account</h2>
+    <input type="text" id="signupUsername" placeholder="Choose Username" />
+    <input type="password" id="signupPassword" placeholder="Choose Password" />
+    <button class="btn" id="signupBtn">Create Account</button>
+    <p style="margin-top:1rem;">Already have an account?
+      <a href="#" id="showLogin" style="color:var(--accent);font-weight:600;">Back to Login</a>
+    </p>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" style="display:none;flex-direction:column;min-height:100vh;">
+  <nav>
+    <h2>🌾 FarmLog</h2>
+    <div>
+      <a href="#" data-tab="home" class="active">Home</a>
+      <a href="#" data-tab="records">Records</a>
+      <a href="#" data-tab="resources">Resources</a>
+      <a href="#" data-tab="support">Support</a>
+      <a href="#" id="logoutBtn" style="color:red;font-weight:bold;">Logout</a>
+    </div>
+  </nav>
+
+  <!-- HOME -->
+  <div id="home" class="container tab active">
+    <div class="hero">
+      <h1>Welcome to FarmLog</h1>
+      <p>Manage, analyze, and visualize your farm data — empowering smart, sustainable agriculture for everyone.</p>
+      <button class="btn" id="goToRecords">Get Started →</button>
+    </div>
+    <div class="features">
+      <div class="card">
+        <h3>📋 Easy Record Keeping</h3>
+        <p>Log your daily farm expenses, fertilizers, yield, and livestock in one place.</p>
+      </div>
+      <div class="card">
+        <h3>📊 Smart Analytics</h3>
+        <p>Visualize your data with simple charts to make better farming decisions.</p>
+      </div>
+      <div class="card">
+        <h3>🌐 Govt Resources</h3>
+        <p>Access important agriculture portals and schemes directly from FarmLog.</p>
+      </div>
+      <div class="card">
+        <h3>💬 Support</h3>
+        <p>Need help? Get in touch with our team for assistance anytime.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECORDS -->
+  <div id="records" class="container tab">
+    <h1>Farm Records</h1>
+    <form id="recordForm">
+      <label>Date</label><input id="date" type="date" required />
+      <label>Crop</label>
+      <select id="crop">
+        <option>Paddy</option><option>Wheat</option><option>Maize</option><option>Sugarcane</option><option>Cotton</option>
+        <option>Tomato</option><option>Onion</option><option>Groundnut</option><option>Millets</option><option>Pulses</option>
+        <option>Banana</option><option>Mango</option><option>Sunflower</option><option>Potato</option><option>Chili</option>
+      </select>
+      <label>Type</label>
+      <select id="type">
+        <option value="expense">Expense</option>
+        <option value="fertilizer">Fertilizer</option>
+        <option value="yield">Yield</option>
+        <option value="livestock">Livestock</option>
+      </select>
+      <label>Category / Item</label><input id="category" type="text" />
+      <label>Quantity</label><input id="quantity" type="text" />
+      <label>Amount (₹)</label><input id="amount" type="number" />
+      <label>Notes</label><textarea id="notes"></textarea><br />
+      <button class="btn" type="submit">Add / Save</button>
+      <button class="btn secondary" type="button" id="clearAll">Clear All</button>
+      <button class="btn secondary" type="button" id="exportCsv">Export CSV</button>
+    </form>
+
+    <h2>All Records</h2>
+    <table id="recordsTable">
+      <thead><tr><th>Date</th><th>Crop</th><th>Type</th><th>Category</th><th>Qty</th><th>Amount</th><th>Actions</th></tr></thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="chart-box">
+      <h2>Crop-wise Expense Chart</h2>
+      <canvas id="expenseChart" height="120"></canvas>
+    </div>
+  </div>
+
+  <!-- RESOURCES -->
+  <div id="resources" class="container tab">
+    <h1>📘 Farmers’ Resources</h1>
+    <ul>
+      <li><a href="https://pmkisan.gov.in" target="_blank">PM Kisan Portal</a></li>
+      <li><a href="https://enam.gov.in" target="_blank">eNAM – National Agri Market</a></li>
+      <li><a href="https://soilhealth.dac.gov.in" target="_blank">Soil Health Card</a></li>
+      <li><a href="https://pmfby.gov.in" target="_blank">PMFBY Crop Insurance</a></li>
+      <li><a href="https://farmer.gov.in" target="_blank">Farmer Portal</a></li>
+      <li><a href="https://agmarknet.gov.in" target="_blank">Agmarknet Prices</a></li>
+    </ul>
+  </div>
+
+  <!-- SUPPORT -->
+  <div id="support" class="container tab">
+    <h1>Support</h1>
+    <p>If you face any issue or want to share feedback, contact us:</p>
+    <ul>
+      <li>Email: <a href="mailto:support@farmlog.in">support@farmlog.in</a></li>
+      <li>WhatsApp: <a href="https://wa.me/91XXXXXXXXXX" target="_blank">Chat with us</a></li>
+    </ul>
+    <p style="color:var(--muted)">We built FarmLog to help farmers embrace digital tools for a greener, smarter future.</p>
+  </div>
+
+  <footer>© 2025 FarmLog | Built to help farmers by our team</footer>
+</div>
+
+<script>
+/* ---------- Login + Signup Logic ---------- */
+const loginPage = document.getElementById("loginPage");
+const app = document.getElementById("app");
+const logoutBtn = document.getElementById("logoutBtn");
+const loginBox = document.getElementById("loginBox");
+const signupBox = document.getElementById("signupBox");
+
+let users = JSON.parse(localStorage.getItem("farmlog_users") || "[]");
+
+function showApp() {
+  loginPage.style.display = "none";
+  app.style.display = "flex";
+}
+function logout() {
+  localStorage.removeItem("farmlog_loggedin");
+  localStorage.removeItem("farmlog_currentUser");
+  location.reload();
+}
+logoutBtn.addEventListener("click", logout);
+
+// If already logged in
+if (localStorage.getItem("farmlog_loggedin") === "true") {
+  showApp();
+}
+
+/* --- Toggle between login & signup --- */
+document.getElementById("showSignup").onclick = (e) => {
+  e.preventDefault();
+  loginBox.style.display = "none";
+  signupBox.style.display = "block";
+};
+document.getElementById("showLogin").onclick = (e) => {
+  e.preventDefault();
+  signupBox.style.display = "none";
+  loginBox.style.display = "block";
+};
+
+/* --- Sign Up --- */
+document.getElementById("signupBtn").onclick = () => {
+  const user = document.getElementById("signupUsername").value.trim();
+  const pass = document.getElementById("signupPassword").value.trim();
+
+  if (!user || !pass) return alert("Please enter both username and password.");
+
+  const exists = users.find(u => u.username === user);
+  if (exists) return alert("Username already exists. Choose another.");
+
+  users.push({ username: user, password: pass });
+  localStorage.setItem("farmlog_users", JSON.stringify(users));
+  alert("Account created! Please log in.");
+  document.getElementById("signupUsername").value = "";
+  document.getElementById("signupPassword").value = "";
+  signupBox.style.display = "none";
+  loginBox.style.display = "block";
+};
+
+/* --- Login --- */
+document.getElementById("loginBtn").onclick = () => {
+  const user = document.getElementById("loginUsername").value.trim();
+  const pass = document.getElementById("loginPassword").value.trim();
+
+  if (!user || !pass) return alert("Please enter username and password.");
+
+  const found = users.find(u => u.username === user && u.password === pass);
+  if (found) {
+    localStorage.setItem("farmlog_loggedin", "true");
+    localStorage.setItem("farmlog_currentUser", user);
+    showApp();
+  } else {
+    alert("Invalid username or password.");
+  }
+};
+
+/* ---------- Tabs ---------- */
+function openTab(name){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  document.getElementById(name).classList.add("active");
+  document.querySelectorAll("nav a").forEach(a=>a.classList.remove("active"));
+  const activeLink=document.querySelector(`nav a[data-tab='${name}']`);
+  if(activeLink) activeLink.classList.add("active");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+document.querySelectorAll("nav a[data-tab]").forEach(a=>{
+  a.addEventListener("click",e=>{e.preventDefault();openTab(a.dataset.tab);});
+});
+document.getElementById("goToRecords").onclick=()=>openTab("records");
+
+/* ---------- Record Logic + Chart ---------- */
+const $=id=>document.getElementById(id);
+const currentUser = localStorage.getItem("farmlog_currentUser") || "guest";
+const storageKey = `farmlog_records_${currentUser}`;
+let records = JSON.parse(localStorage.getItem(storageKey) || "[]");
+const tbody=document.querySelector("#recordsTable tbody");
+let editIndex=-1;
+const dateEl=$("date");dateEl.value=new Date().toISOString().slice(0,10);
+
+function render(){
+  tbody.innerHTML="";
+  records.forEach((r,i)=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${r.date}</td><td>${r.crop}</td><td>${r.type}</td><td>${r.category}</td>
+    <td>${r.quantity}</td><td>${r.amount}</td>
+    <td><button class='btn secondary' onclick='edit(${i})'>Edit</button>
+    <button class='btn secondary' onclick='del(${i})'>Delete</button></td>`;
+    tbody.appendChild(tr);
+  });
+  updateChart();
+}
+function save(){
+  localStorage.setItem(storageKey,JSON.stringify(records));
+  render();
+}
+window.edit=function(i){
+  const r=records[i];
+  $("date").value=r.date;
+  $("crop").value=r.crop;
+  $("type").value=r.type;
+  $("category").value=r.category;
+  $("quantity").value=r.quantity;
+  $("amount").value=r.amount;
+  $("notes").value=r.notes;
+  editIndex=i;
+}
+window.del=function(i){
+  if(confirm("Delete this record?")){records.splice(i,1);save();}
+}
+$("recordForm").onsubmit=e=>{
+  e.preventDefault();
+  const r={date:$("date").value,crop:$("crop").value,type:$("type").value,
+  category:$("category").value,quantity:$("quantity").value,amount:$("amount").value,notes:$("notes").value};
+  if(editIndex>=0){records[editIndex]=r;editIndex=-1;}else{records.push(r);}
+  save();e.target.reset();
+};
+$("clearAll").onclick=()=>{if(confirm("Clear all records?")){records=[];save();}};
+$("exportCsv").onclick=()=>{
+  let csv="Date,Crop,Type,Category,Quantity,Amount,Notes\n";
+  records.forEach(r=>{csv+=`${r.date},${r.crop},${r.type},${r.category},${r.quantity},${r.amount},${r.notes}\n`;});
+  const blob=new Blob([csv],{type:"text/csv"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=`FarmLog_Records_${currentUser}.csv`;
+  a.click();
+};
+
+/* ---------- Chart ---------- */
+let chart;
+function updateChart(){
+  const ctx=$("expenseChart").getContext("2d");
+  const data={};
+  records.forEach(r=>{
+    if(r.type==="expense"){
+      data[r.crop]=(data[r.crop]||0)+Number(r.amount||0);
+    }
+  });
+  if(chart) chart.destroy();
+  chart=new Chart(ctx,{type:"bar",data:{
+    labels:Object.keys(data),
+    datasets:[{label:"Expenses (₹)",data:Object.values(data),backgroundColor:"#2e8b57"}]
+  }});
+}
+render();
+</script>
+</body>
+</html>
